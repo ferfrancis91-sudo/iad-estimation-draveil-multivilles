@@ -147,15 +147,19 @@
   .quote-mark{position:absolute;top:-4%;left:2%;font-family:'Tangerine',cursive;font-weight:700;font-size:clamp(8rem,18vw,15rem);color:var(--iad-blue);opacity:.06;line-height:1;pointer-events:none;}
   .quote-grid{max-width:1080px;margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:1fr .85fr;gap:56px;align-items:center;}
   .quote-wrap{text-align:left;}
-  .quote-text{font-family:'Tangerine',cursive;font-weight:700;font-size:clamp(2.2rem,3.6vw,3rem);color:var(--iad-navy);line-height:1.25;margin:18px 0 22px;}
+  .quote-text{font-family:'Tangerine',cursive;font-weight:700;font-size:clamp(2.2rem,3.6vw,3rem);color:var(--iad-navy);line-height:1.25;margin:18px 0 22px;min-height:2.6em;}
   .quote-attrib{font-family:'Sora',sans-serif;font-weight:700;font-size:.85rem;color:var(--gold);letter-spacing:.04em;text-transform:uppercase;}
   .quote-context{font-size:.9rem;color:var(--ink-soft);max-width:560px;margin:14px 0 0;}
-  .painting-frame{background:#fff;padding:14px 14px 20px;border-radius:6px;box-shadow:0 24px 55px -20px rgba(0,0,0,.35);}
-  .painting-frame img{width:100%;height:auto;display:block;border-radius:2px;}
-  .painting-caption{padding-top:12px;text-align:center;}
-  .painting-caption strong{display:block;font-family:'Sora',sans-serif;font-size:.82rem;color:var(--iad-navy);font-weight:700;}
-  .painting-caption span{display:block;font-size:.74rem;color:var(--ink-soft);margin-top:3px;}
-  @media (max-width:768px){ .quote-grid{grid-template-columns:1fr;} .quote-wrap{text-align:center;} .quote-context{margin:14px auto 0;} }
+  .postcard-scatter{position:relative;height:360px;}
+  .postcard{position:absolute;width:180px;background:#fff;padding:10px 10px 14px;border-radius:4px;box-shadow:0 14px 30px -14px rgba(7,27,66,.4);transition:transform .8s cubic-bezier(.22,.68,.35,1), box-shadow .8s ease;}
+  .postcard img{width:100%;height:118px;object-fit:cover;border-radius:2px;display:block;filter:sepia(.2) contrast(1.05);}
+  .postcard-cap{padding-top:8px;text-align:center;}
+  .postcard-cap strong{display:block;font-family:'Sora',sans-serif;font-size:.74rem;color:var(--iad-navy);font-weight:700;}
+  .postcard-cap span{display:block;font-size:.66rem;color:var(--ink-soft);margin-top:2px;}
+  .postcard.active{box-shadow:0 30px 55px -16px rgba(7,27,66,.5);}
+  .tw-cursor{display:inline-block;animation:twBlink 1s step-end infinite;color:var(--gold);}
+  @keyframes twBlink{ 50%{opacity:0;} }
+  @media (max-width:768px){ .quote-grid{grid-template-columns:1fr;} .quote-wrap{text-align:center;} .quote-context{margin:14px auto 0;} .postcard-scatter{height:300px;max-width:380px;margin:0 auto;} .postcard{width:150px;} }
 
   .about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:center;}
   .about-photo{position:relative;justify-self:center;}
@@ -316,13 +320,13 @@
   </div>
   <div class="marquee-track">
     <img src="images/champrosay-petite-eglise.jpg" alt="Champrosay, la petite église">
-    <img src="images/draveil-eglise-1.jpg" alt="Champrosay, la petite église, carte postale ancienne">
-    <img src="images/draveil-chateau-moderne-1.jpg" alt="Demeure historique de Champrosay">
-    <img src="images/draveil-mairie-rue.jpg" alt="Champrosay, rue ancienne, carte postale">
+    <img src="images/champrosay-grande-rue.jpg" alt="Champrosay, Grande Rue, carte postale ancienne">
+    <img src="images/champrosay-demeure-xixe.jpg" alt="Demeure historique de Champrosay">
+    <img src="images/champrosay-rue-alphonse-daudet.jpg" alt="Rue Alphonse Daudet, Champrosay">
     <img src="images/champrosay-petite-eglise.jpg" alt="" aria-hidden="true">
-    <img src="images/draveil-eglise-1.jpg" alt="" aria-hidden="true">
-    <img src="images/draveil-chateau-moderne-1.jpg" alt="" aria-hidden="true">
-    <img src="images/draveil-mairie-rue.jpg" alt="" aria-hidden="true">
+    <img src="images/champrosay-grande-rue.jpg" alt="" aria-hidden="true">
+    <img src="images/champrosay-demeure-xixe.jpg" alt="" aria-hidden="true">
+    <img src="images/champrosay-rue-alphonse-daudet.jpg" alt="" aria-hidden="true">
   </div>
 </section>
 
@@ -374,19 +378,20 @@
 
 <section class="quote-band">
   <span class="quote-mark" aria-hidden="true">"</span>
-  <div class="wrap quote-grid reveal">
+  <div class="wrap quote-grid reveal" id="quoteBand">
     <div class="quote-wrap">
       <span class="eyebrow" style="color:var(--gold);">Alphonse Daudet, à propos de sa maison de Champrosay</span>
-      <p class="quote-text">Nous habitons entre la Seine et la forêt de Sénart une petite maisonnette où il y a deux chambres en trop.</p>
+      <p class="quote-text" id="quoteTypewriter" data-text="Nous habitons entre la Seine et la forêt de Sénart une petite maisonnette où il y a deux chambres en trop."></p>
       <span class="quote-attrib">— Lettre de l'été 1868</span>
       <p class="quote-context">C'est dans ce hameau, ancienne demeure d'Eugène Delacroix, que Daudet s'installe à son mariage. Le peintre y avait lui-même séjourné à partir de 1844, peignant sur place plusieurs de ses toiles, dont <em>Paysage à Champrosay</em>.</p>
     </div>
-    <div class="painting-frame">
-      <img src="images/champrosay-petite-eglise.jpg" alt="Champrosay, la petite église">
-      <div class="painting-caption">
-        <strong>Champrosay, la petite église</strong>
-        <span>Le cadre qui a inspiré Delacroix, Daudet et leurs hôtes</span>
-      </div>
+    <div class="postcard-scatter" id="postcardScatter">
+      <div class="postcard" data-src="images/champrosay-petite-eglise.jpg" data-title="Champrosay, la petite église" data-sub="Carte postale ancienne"></div>
+      <div class="postcard" data-src="images/delacroix-paysage-champrosay.jpg" data-title="Paysage à Champrosay" data-sub="Tableau d'Eugène Delacroix"></div>
+      <div class="postcard" data-src="images/champrosay-maison-daudet.jpg" data-title="La maison de Daudet" data-sub="Champrosay"></div>
+      <div class="postcard" data-src="images/champrosay-grande-rue.jpg" data-title="Grande Rue" data-sub="Champrosay, carte postale"></div>
+      <div class="postcard" data-src="images/champrosay-rue-alphonse-daudet.jpg" data-title="Rue Alphonse Daudet" data-sub="Champrosay"></div>
+      <div class="postcard" data-src="images/champrosay-demeure-xixe.jpg" data-title="Demeure du XIXe" data-sub="Champrosay"></div>
     </div>
   </div>
 </section>
@@ -583,6 +588,99 @@
     revealEls.forEach(el=>io.observe(el));
   } else {
     revealEls.forEach(el=>el.classList.add('in-view'));
+  }
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var pcPositions = [
+    {x:10, y:10, r:-8},
+    {x:170, y:0, r:5},
+    {x:280, y:60, r:-4},
+    {x:30, y:170, r:9},
+    {x:210, y:190, r:-6},
+    {x:110, y:100, r:3}
+  ];
+  var pcScatter = document.getElementById('postcardScatter');
+  if(pcScatter){
+    var pcEls = Array.prototype.slice.call(pcScatter.querySelectorAll('.postcard'));
+    pcEls.forEach(function(el, i){
+      var pos = pcPositions[i] || {x:0,y:0,r:0};
+      var img = document.createElement('img');
+      img.src = el.getAttribute('data-src');
+      img.alt = el.getAttribute('data-title');
+      var cap = document.createElement('div');
+      cap.className = 'postcard-cap';
+      cap.innerHTML = '<strong>' + el.getAttribute('data-title') + '</strong><span>' + el.getAttribute('data-sub') + '</span>';
+      el.appendChild(img);
+      el.appendChild(cap);
+      el.style.left = pos.x + 'px';
+      el.style.top = pos.y + 'px';
+      el.setAttribute('data-base-r', pos.r);
+      el.style.transform = 'rotate(' + pos.r + 'deg) scale(.86)';
+      el.style.zIndex = 1;
+    });
+    if(reduceMotion){
+      var firstEl = pcEls[0];
+      if(firstEl){
+        firstEl.classList.add('active');
+        firstEl.style.transform = 'rotate(0deg) scale(1.12)';
+        firstEl.style.zIndex = 10;
+      }
+    } else {
+      var pcActive = 0;
+      function pcCycle(){
+        pcEls.forEach(function(el, i){
+          if(i === pcActive){
+            el.classList.add('active');
+            el.style.transform = 'rotate(0deg) scale(1.12)';
+            el.style.zIndex = 10;
+          } else {
+            el.classList.remove('active');
+            el.style.transform = 'rotate(' + el.getAttribute('data-base-r') + 'deg) scale(.86)';
+            el.style.zIndex = 1;
+          }
+        });
+        pcActive = (pcActive + 1) % pcEls.length;
+      }
+      pcCycle();
+      setInterval(pcCycle, 2600);
+    }
+  }
+
+  var twEl = document.getElementById('quoteTypewriter');
+  if(twEl){
+    var twText = twEl.getAttribute('data-text');
+    if(reduceMotion){
+      twEl.textContent = twText;
+    } else {
+      var twDone = false;
+      function typeQuote(){
+        if(twDone) return;
+        twDone = true;
+        var i = 0;
+        function step(){
+          if(i <= twText.length){
+            twEl.innerHTML = twText.slice(0, i) + '<span class="tw-cursor">|</span>';
+            i++;
+            setTimeout(step, 32);
+          } else {
+            twEl.innerHTML = twText;
+          }
+        }
+        step();
+      }
+      var quoteBandEl = document.getElementById('quoteBand');
+      if('IntersectionObserver' in window && quoteBandEl){
+        var twIo = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if(entry.isIntersecting){ typeQuote(); twIo.unobserve(entry.target); }
+          });
+        }, {threshold:.4});
+        twIo.observe(quoteBandEl);
+      } else {
+        typeQuote();
+      }
+    }
   }
 
   var LEAD_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbye0uOjF8Lp_h4I1aSa2MQ4KW0VqwVczctExPt988LNm0Vad4R7pAmwHIPBg2SVTwSf/exec';
