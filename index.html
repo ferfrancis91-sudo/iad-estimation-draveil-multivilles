@@ -241,6 +241,20 @@
   .sim-result .big{font-family:'Sora',sans-serif;font-size:1.9rem;font-weight:800;}
   .sim-result .small{font-size:.72rem;color:rgba(255,255,255,.65);}
   .sim-note{font-size:.68rem;color:rgba(255,255,255,.55);margin-top:14px;text-align:center;}
+  .sim-result-range{margin-top:22px;background:rgba(255,255,255,.1);border-radius:16px;padding:20px;}
+  .sim-range-label{font-size:.68rem;color:rgba(255,255,255,.65);margin-bottom:10px;}
+  .sim-range-values{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:8px;}
+  .sim-range-values .big-low, .sim-range-values .big-high{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;}
+  .sim-range-values .big-high{color:var(--gold-2);}
+  .sim-range-values .range-sep{font-size:.75rem;color:rgba(255,255,255,.5);}
+  .sim-range-bar{height:6px;border-radius:100px;background:linear-gradient(90deg,var(--iad-blue-2),var(--gold));margin-bottom:14px;}
+  .sim-result-range .sim-note{margin:0 0 18px;text-align:left;}
+  .sim-cta-wrap{position:relative;}
+  .sim-cta-pulse{display:flex;width:100%;justify-content:center;background:#fff;color:var(--iad-navy);box-shadow:none;animation:simCtaPulse 1.8s ease-in-out infinite;}
+  @keyframes simCtaPulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.55);transform:scale(1);}70%{box-shadow:0 0 0 14px rgba(255,255,255,0);transform:scale(1.03);}100%{box-shadow:0 0 0 0 rgba(255,255,255,0);transform:scale(1);}}
+  .sim-cursor{position:absolute;top:34px;left:58%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));animation:simCursorTap 1.8s ease-in-out infinite;transform-origin:20% 20%;pointer-events:none;}
+  @keyframes simCursorTap{0%{transform:translate(0,0) scale(1);opacity:1;}15%{transform:translate(-6px,-4px) scale(.92);opacity:1;}30%{transform:translate(0,0) scale(1);opacity:1;}75%{transform:translate(0,0) scale(1);opacity:1;}85%{transform:translate(-6px,-4px) scale(.92);opacity:.7;}100%{transform:translate(0,0) scale(1);opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .sim-cta-pulse{animation:none;} .sim-cursor{animation:none;} }
 
   .ville-mood{position:relative;height:440px;overflow:hidden;background:var(--iad-navy);}
   .ville-mood-caption{position:absolute;top:0;left:0;right:0;z-index:2;padding:32px 36px 70px;background:linear-gradient(180deg, rgba(7,27,66,.92) 0%, rgba(7,27,66,.5) 55%, transparent 100%);pointer-events:none;}
@@ -342,11 +356,20 @@
         <label>Surface habitable (m²)</label>
         <input type="number" id="surface" placeholder="Ex : 100">
       </div>
-      <div class="sim-result">
-        <div><div class="big" id="resultat">—</div><div class="small">Estimation indicative</div></div>
-        <a href="#contact" class="btn" id="affiner-btn" style="background:var(--gold);box-shadow:none;">Affiner avec Francis</a>
+      <div class="sim-result-range">
+        <div class="sim-range-label">Fourchette d'estimation</div>
+        <div class="sim-range-values">
+          <span class="big-low" id="resultat-bas">—</span>
+          <span class="range-sep">à</span>
+          <span class="big-high" id="resultat-haut">—</span>
+        </div>
+        <div class="sim-range-bar"></div>
+        <p class="sim-note">Cette fourchette est indicative et dépend de l'état du bien, du terrain et de l'exposition. Francis affine ce chiffrage lors d'une visite.</p>
+        <div class="sim-cta-wrap">
+          <a href="#contact" class="btn sim-cta-pulse" id="affiner-btn">Affiner avec Francis</a>
+          <svg class="sim-cursor" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 L4 20 L9 15.5 L12.5 22 L15 20.5 L11.5 14 L18 14 Z" fill="#fff" stroke="var(--iad-navy)" stroke-width="1"/></svg>
+        </div>
       </div>
-      <p class="sim-note">Estimation basée sur les prix moyens constatés à Draveil (≈ 3 150 €/m²) — une visite reste nécessaire pour un chiffrage précis.</p>
     </div>
   </div>
 </section>
@@ -640,12 +663,22 @@
 <script>
   const communeSelect = document.getElementById('commune');
   const surfaceInput = document.getElementById('surface');
-  const resultat = document.getElementById('resultat');
+  const resultatBas = document.getElementById('resultat-bas');
+  const resultatHaut = document.getElementById('resultat-haut');
+  function toEuro(n){
+    return (Math.round(n/100)*100).toLocaleString('fr-FR') + " €";
+  }
   function updateEstimate(){
     const prix = parseInt(communeSelect.value, 10);
     const surface = parseFloat(surfaceInput.value);
-    if(!surface || surface <= 0){ resultat.textContent = "—"; return; }
-    resultat.textContent = Math.round(prix * surface).toLocaleString('fr-FR') + " €";
+    if(!surface || surface <= 0){
+      resultatBas.textContent = "—";
+      resultatHaut.textContent = "—";
+      return;
+    }
+    const median = prix * surface;
+    resultatBas.textContent = toEuro(median * 0.90);
+    resultatHaut.textContent = toEuro(median * 1.10);
   }
   communeSelect.addEventListener('change', updateEstimate);
   surfaceInput.addEventListener('input', updateEstimate);
