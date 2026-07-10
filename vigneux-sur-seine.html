@@ -116,6 +116,18 @@
   .quality-card h3{color:var(--iad-navy);font-size:1.02rem;margin-bottom:8px;}
   .quality-card p{color:var(--ink-soft);font-size:.88rem;}
 
+  /* MAP */
+  .map-wrap{max-width:1180px;margin:0 auto;}
+  #carte-interactive{width:100%;height:520px;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line);background:var(--iad-tint-2);}
+  .map-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;justify-content:center;}
+  .map-toggle{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:100px;border:1.5px solid var(--line);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--ink-soft);background:#fff;transition:.2s;user-select:none;}
+  .map-toggle.active{color:var(--ink);background:var(--iad-tint-2);}
+  .map-toggle .dot{width:10px;height:10px;border-radius:50%;}
+  .map-note{text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:16px;}
+  .map-loading{text-align:center;font-size:.85rem;color:var(--ink-soft);padding:10px 0 0;}
+  .leaflet-popup-content{font-family:'Inter',sans-serif;font-size:.86rem;}
+  .leaflet-popup-content b{font-family:'Sora',sans-serif;color:var(--iad-navy);}
+
   .about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:center;}
   .about-photo{position:relative;justify-self:center;}
   .about-photo img{width:280px;height:280px;object-fit:cover;border-radius:50%;border:6px solid #fff;box-shadow:var(--shadow);}
@@ -209,10 +221,10 @@
     <nav class="links">
       <a href="index.html">Accueil</a>
       <a href="index.html#secteurs">Communes voisines</a>
+      <a href="#carte">Carte interactive</a>
       <a href="histoire-qualite-de-vie.html">Histoire &amp; vie locale</a>
       <a href="ecoles-carte-scolaire.html">Écoles</a>
       <a href="calendrier.html">Agenda</a>
-      <a href="carte-interactive.html">Carte interactive</a>
     </nav>
     <a href="#simulateur" class="btn">Estimer mon bien</a>
   </div>
@@ -323,6 +335,109 @@
     </div>
   </div>
 </section>
+
+<section id="carte" style="background:var(--iad-tint-2);">
+  <div class="wrap map-wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Repères pratiques</span>
+      <h2>La carte interactive de Vigneux-sur-Seine</h2>
+      <p>Mairie, écoles, église et gare RER D : repérez d'un coup d'œil les points utiles autour de votre futur bien.</p>
+    </div>
+    <div class="map-legend">
+      <div class="map-toggle active" data-cat="administration"><span class="dot" style="background:#071B42"></span>Administration</div>
+      <div class="map-toggle active" data-cat="ecole"><span class="dot" style="background:#0B5FFF"></span>Écoles</div>
+      <div class="map-toggle active" data-cat="culte"><span class="dot" style="background:#8E44AD"></span>Lieux de culte</div>
+      <div class="map-toggle active" data-cat="gare"><span class="dot" style="background:#16A34A"></span>Gare / transports</div>
+    </div>
+    <div id="carte-interactive"></div>
+    <p class="map-loading" id="mapLoading">Chargement des repères sur la carte…</p>
+    <p class="map-note">Carte © contributeurs OpenStreetMap · Positions calculées automatiquement à partir des adresses officielles — à confirmer avant tout déplacement.</p>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const POIS_VIGNEUX = [
+    {cat:"administration", nom:"Mairie de Vigneux-sur-Seine", addr:"75 rue Pierre Marin, 91270 Vigneux-sur-Seine, France"},
+    {cat:"ecole", nom:"Collège Henri Wallon", addr:"57 rue Gaston Grinbaum, 91270 Vigneux-sur-Seine, France"},
+    {cat:"ecole", nom:"Collège Paul Eluard", addr:"1 rue Paul Eluard, 91270 Vigneux-sur-Seine, France"},
+    {cat:"ecole", nom:"École élémentaire Louise Michel", addr:"1 rue Louise Michel, 91270 Vigneux-sur-Seine, France"},
+    {cat:"ecole", nom:"École élémentaire Romain Rolland", addr:"1 rue Romain Rolland, 91270 Vigneux-sur-Seine, France"},
+    {cat:"ecole", nom:"École maternelle Louis Pasteur", addr:"3 rue du Maréchal Leclerc, 91270 Vigneux-sur-Seine, France"},
+    {cat:"culte", nom:"Église Saint-Pierre-ès-Liens", addr:"18 rue Jean-Corringer, 91270 Vigneux-sur-Seine, France"},
+    {cat:"culte", nom:"Chapelle Notre-Dame-des-Sables", addr:"Vigneux-sur-Seine, 91270, France"},
+    {cat:"gare", nom:"Gare de Vigneux-sur-Seine (RER D)", addr:"Avenue du Président Robert Lakota, 91270 Vigneux-sur-Seine, France"}
+  ];
+  const CAT_META_VIGNEUX = {
+    administration:{label:"Administration", color:"#071B42"},
+    ecole:{label:"Écoles", color:"#0B5FFF"},
+    culte:{label:"Lieux de culte", color:"#8E44AD"},
+    gare:{label:"Gare / transports", color:"#16A34A"}
+  };
+  const CENTER_VIGNEUX = [48.6980, 2.4130];
+
+  const mapVigneux = L.map('carte-interactive').setView(CENTER_VIGNEUX, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(mapVigneux);
+
+  const layersVigneux = {};
+  Object.keys(CAT_META_VIGNEUX).forEach(c => layersVigneux[c] = L.layerGroup().addTo(mapVigneux));
+
+  const CACHE_KEY_VIGNEUX = 'geocache_v1_vigneux';
+  let cacheVigneux = {};
+  try { cacheVigneux = JSON.parse(localStorage.getItem(CACHE_KEY_VIGNEUX) || '{}'); } catch(e) { cacheVigneux = {}; }
+  function saveCacheVigneux(){ try { localStorage.setItem(CACHE_KEY_VIGNEUX, JSON.stringify(cacheVigneux)); } catch(e){} }
+
+  function addMarkerVigneux(poi, lat, lon){
+    const meta = CAT_META_VIGNEUX[poi.cat];
+    const icon = L.divIcon({
+      className: '',
+      html: '<div style="width:16px;height:16px;border-radius:50%;background:' + meta.color + ';border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)"></div>',
+      iconSize: [16,16], iconAnchor: [8,8]
+    });
+    const m = L.marker([lat, lon], {icon}).bindPopup(
+      '<b>' + poi.nom + '</b><br>' + poi.addr.split(',').slice(0,2).join(',') +
+      '<br><span style="color:' + meta.color + ';font-weight:600;">' + meta.label + '</span>'
+    );
+    m.addTo(layersVigneux[poi.cat]);
+  }
+
+  async function geocodeVigneux(addr){
+    if(cacheVigneux[addr]) return cacheVigneux[addr];
+    try{
+      const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q=' + encodeURIComponent(addr));
+      const data = await res.json();
+      if(data && data[0]){
+        const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        cacheVigneux[addr] = coords; saveCacheVigneux();
+        return coords;
+      }
+    } catch(e){ console.warn('geocode fail', addr, e); }
+    return null;
+  }
+
+  (async function loadPoisVigneux(){
+    const loading = document.getElementById('mapLoading');
+    for(const poi of POIS_VIGNEUX){
+      const cached = !!cacheVigneux[poi.addr];
+      const coords = await geocodeVigneux(poi.addr);
+      if(coords) addMarkerVigneux(poi, coords[0], coords[1]);
+      if(!cached) await new Promise(r => setTimeout(r, 1100));
+    }
+    if(loading) loading.style.display = 'none';
+  })();
+
+  document.querySelectorAll('.map-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.cat;
+      btn.classList.toggle('active');
+      if(mapVigneux.hasLayer(layersVigneux[cat])) mapVigneux.removeLayer(layersVigneux[cat]); else mapVigneux.addLayer(layersVigneux[cat]);
+    });
+  });
+</script>
 
 <section id="apropos">
   <div class="wrap">
@@ -455,6 +570,7 @@
         <a href="index.html">Accueil (Draveil)</a>
         <a href="soisy-sur-seine.html">Soisy-sur-Seine</a>
         <a href="https://ferfrancis91-sudo.github.io/iad-estimation-montgeron/" target="_blank" rel="noopener">Montgeron (site dédié) ↗</a>
+        <a href="#carte">Carte interactive</a>
         <a href="histoire-qualite-de-vie.html">Histoire &amp; vie locale</a>
         <a href="ecoles-carte-scolaire.html">Écoles &amp; carte scolaire</a>
       </div>
